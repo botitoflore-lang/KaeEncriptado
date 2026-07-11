@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CriptoPana - La Ruedita</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #3b82f6;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px; /* Tamaño perfecto para celular */
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .wheel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        /* Control interactivo que simula el giro */
+        .slider-wrapper {
+            width: 100%;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .shift-badge {
+            background: var(--accent);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: inline-block;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            color: var(--text);
+            padding: 12px;
+            font-size: 1rem;
+            resize: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .mode-selector {
+            display: flex;
+            background: #0f172a;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>CriptoPana ⚡</h1>
+            <p>Cifra y descifra en tiempo real</p>
+        </header>
+
+        <!-- Selector de Modo: Cifrar o Descifrar -->
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btn-cifrar" onclick="setMode('cifrar')">Cifrar</button>
+            <button class="mode-btn" id="btn-descifrar" onclick="setMode('descifrar')">Descifrar</button>
+        </div>
+
+        <!-- La Ruedita (Control de Desplazamiento) -->
+        <div class="wheel-container">
+            <label>Gira la rueda (Desplazamiento)</label>
+            <div class="slider-wrapper">
+                <div class="shift-badge" id="wheel-value">0</div>
+                <input type="range" id="wheel" min="0" max="25" value="0" oninput="updateWheel()">
+            </div>
+        </div>
+
+        <!-- Entrada de Texto -->
+        <div class="input-group">
+            <label for="input-text">Tu Mensaje</label>
+            <textarea id="input-text" placeholder="Escribe algo aquí, mi pana..." oninput="processText()"></textarea>
+        </div>
+
+        <!-- Resultado -->
+        <div class="input-group">
+            <label>Resultado</label>
+            <textarea id="output-text" readonly placeholder="Aquí saldrá la magia..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'cifrar';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-cifrar').classList.toggle('active', mode === 'cifrar');
+            document.getElementById('btn-descifrar').classList.toggle('active', mode === 'descifrar');
+            processText(); // Recalcular al cambiar de modo
+        }
+
+        function updateWheel() {
+            const val = document.getElementById('wheel').value;
+            document.getElementById('wheel-value').innerText = val;
+            processText(); // Recalcular al mover la rueda
+        }
+
+        function processText() {
+            const input = document.getElementById('input-text').value;
+            let shift = parseInt(document.getElementById('wheel').value);
+            
+            // Si es descifrar, invertimos el giro de la rueda
+            if (currentMode === 'descifrar') {
+                shift = (26 - shift) % 26;
+            }
+
+            let output = '';
+
+            for (let i = 0; i < input.length; i++) {
+                let char = input[i];
+                
+                // Cifrado básico para letras mayúsculas y minúsculas
+                if (char.match(/[a-z]/i)) {
+                    const code = input.charCodeAt(i);
+                    // Mayúsculas
+                    if (code >= 65 && code <= 90) {
+                        char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
+                    }
+                    // Minúsculas
+                    else if (code >= 97 && code <= 122) {
+                        char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
+                    }
+                }
+                output += char;
+            }
+
+            document.getElementById('output-text').value = output;
+        }
+    </script>
+</body>
+</html>
