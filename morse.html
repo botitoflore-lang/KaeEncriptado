@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151f32;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --text: #f8fafc;
+            --text-muted: #64748b;
+            --morse-light: #eab308; /* Amarillo neón para el flash morse */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .mode-selector {
+            display: flex;
+            background: #0b0f19;
+            padding: 4px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #22314d;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* --- MÓDULO DE ANIMACIÓN --- */
+        .animation-box {
+            background: #151f32;
+            border: 1.5px solid #22314d;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .light-bulb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #0b0f19;
+            border: 3px solid #22314d;
+            margin-bottom: 16px;
+            transition: all 0.05s ease; /* Transición ultra rápida para el parpadeo */
+        }
+
+        /* Estado encendido del flash visual */
+        .light-bulb.active {
+            background: var(--morse-light);
+            border-color: #fef08a;
+            box-shadow: 0 0 30px var(--morse-light);
+        }
+
+        .play-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .play-btn:disabled {
+            background: #334155;
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* --- INPUTS --- */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: #151f32;
+            border: 1.5px solid #22314d;
+            border-radius: 16px;
+            color: var(--text);
+            padding: 12px;
+            font-size: 0.95rem;
+            resize: none;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea[readonly] {
+            background: #111a2e;
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Selector de dirección de traducción -->
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btn-cifrar" onclick="setMode('texto-a-morse')">Texto a Morse</button>
+            <button class="mode-btn" id="btn-descifrar" onclick="setMode('morse-a-texto')">Morse a Texto</button>
+        </div>
+
+        <!-- Panel de Animación Visual -->
+        <div class="animation-box">
+            <div class="light-bulb" id="visual-bulb"></div>
+            <button class="play-btn" id="btn-play" onclick="playMorseCode()" disabled>
+                <span>▶</span> Transmitir Luz
+            </button>
+        </div>
+
+        <div class="input-group">
+            <label id="lbl-input">Mensaje en Texto</label>
+            <textarea id="input-text" placeholder="Escribe algo aquí, pana..." oninput="processMorse()"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label id="lbl-output">Código Morse</label>
+            <textarea id="output-text" readonly placeholder="El código aparecerá aquí..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'texto-a-morse';
+        
+        const morseAlphabet = {
+            'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',
+            'E': '.',     'F': '..-.',  'G': '--.',   'H': '....',
+            'I': '..',    'J': '.---',  'K': '-.-',   'L': '.-..',
+            'M': '--',    'N': '-.',    'O': '---',   'P': '.--.',
+            'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+            'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',
+            'Y': '-.--',  'Z': '--..',  '1': '.----', '2': '..---',
+            '3': '...--', '4': '....-', '5': '.....', '6': '-....',
+            '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+            '?': '..--..', '/': '-..-.', '-': '-....-', '.': '.-.-.-'
+        };
+
+        // Diccionario invertido para traducir al revés
+        const textAlphabet = Object.fromEntries(
+            Object.entries(morseAlphabet).map(([key, val]) => [val, key])
+        );
+
+        const inputText = document.getElementById('input-text');
+        const outputText = document.getElementById('output-text');
+        const btnPlay = document.getElementById('btn-play');
+        const visualBulb = document.getElementById('visual-bulb');
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-cifrar').classList.toggle('active', mode === 'texto-a-morse');
+            document.getElementById('btn-descifrar').classList.toggle('active', mode === 'morse-a-texto');
+            
+            // Cambiar etiquetas y limpiar campos
+            if(mode === 'texto-a-morse') {
+                document.getElementById('lbl-input').innerText = "Mensaje en Texto";
+                document.getElementById('lbl-output').innerText = "Código Morse";
+                inputText.placeholder = "Escribe algo aquí, pana...";
+            } else {
+                document.getElementById('lbl-input').innerText = "Código Morse (usa espacios entre letras y / entre palabras)";
+                document.getElementById('lbl-output').innerText = "Texto Traducido";
+                inputText.placeholder = "Ej: .- -. .- / .--. .- -. .-";
+            }
+            inputText.value = '';
+            outputText.value = '';
+            btnPlay.disabled = true;
+        }
+
+        function processMorse() {
+            const input = inputText.value.trim();
+            
+            if (!input) {
+                outputText.value = '';
+                btnPlay.disabled = true;
+                return;
+            }
+
+            if (currentMode === 'texto-a-morse') {
+                let upperInput = input.toUpperCase();
+                let morseResult = [];
+                
+                for (let char of upperInput) {
+                    if (char === ' ') {
+                        morseResult.push('/'); // Separador de palabras
+                    } else if (morseAlphabet[char]) {
+                        morseResult.push(morseAlphabet[char]);
+                    }
+                }
+                outputText.value = morseResult.join(' ');
+                btnPlay.disabled = false; // Habilitar reproducción
+            } else {
+                // Modo: Morse a Texto
+                let words = input.split('/');
+                let textResult = [];
+                
+                for (let word of words) {
+                    let chars = word.trim().split(/\s+/);
+                    let translatedWord = '';
+                    for (let morseChar of chars) {
+                        if (textAlphabet[morseChar]) {
+                            translatedWord += textAlphabet[morseChar];
+                        }
+                    }
+                    textResult.push(translatedWord);
+                }
+                outputText.value = textResult.join(' ');
+                btnPlay.disabled = true; // No reproducimos desde la traducción inversa
+            }
+        }
+
+        // --- SISTEMA DE ANIMACIÓN CON ASYNC/AWAIT ---
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function playMorseCode() {
+            // Obtenemos el morse limpio del área de output
+            const morseCode = outputText.value;
+            if(!morseCode) return;
+
+            btnPlay.disabled = true; // Bloquear botón mientras transmite
+            inputText.disabled = true;
+
+            const DOT_DURATION = 200;  // Tiempo de un punto (.) en milisegundos
+            const DASH_DURATION = 600; // Tiempo de una raya (-)
+
+            for (let i = 0; i < morseCode.length; i++) {
+                let symbol = morseCode[i];
+
+                if (symbol === '.') {
+                    visualBulb.classList.add('active');
+                    await sleep(DOT_DURATION);
+                    visualBulb.classList.remove('active');
+                } else if (symbol === '-') {
+                    visualBulb.classList.add('active');
+                    await sleep(DASH_DURATION);
+                    visualBulb.classList.remove('active');
+                } else if (symbol === ' ') {
+                    // Espacio entre letras
+                    await sleep(DOT_DURATION * 2);
+                    continue;
+                } else if (symbol === '/') {
+                    // Espacio entre palabras
+                    await sleep(DOT_DURATION * 4);
+                    continue;
+                }
+                
+                // Pequeño descanso obligatorio entre símbolos de la misma letra
+                await sleep(DOT_DURATION);
+            }
+
+            btnPlay.disabled = false; // Desbloquear al terminar
+            inputText.disabled = false;
+        }
+    </script>
+</body>
+</html>
