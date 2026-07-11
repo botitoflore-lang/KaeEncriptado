@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CriptoPana - La Rueda Real</title>
+    <title>CriptoPana Suite ⚡</title>
     <style>
         :root {
             --bg-color: #0b0f19;
-            --card-bg: #151f32;
+            --panel-bg: #151f32;
             --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.3);
             --text: #f8fafc;
             --text-muted: #64748b;
         }
@@ -19,348 +18,208 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            user-select: none; /* Evita que se seleccione texto al arrastrar la rueda */
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text);
+            overflow: hidden; /* Evita scrolls extraños en el marco principal */
+            height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        /* --- BARRA SUPERIOR --- */
+        .navbar {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            justify-content: space-between;
             padding: 16px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid #22314d;
+            height: 60px;
+            z-index: 10;
         }
 
-        .app-container {
-            width: 100%;
-            max-width: 380px;
-            background: var(--card-bg);
-            border-radius: 32px;
-            padding: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border: 1px solid #22314d;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 1.6rem;
+        .nav-title {
+            font-size: 1.3rem;
             font-weight: 800;
             background: linear-gradient(45deg, #3b82f6, #10b981);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .mode-selector {
-            display: flex;
-            background: #0b0f19;
-            padding: 4px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-        }
-
-        .mode-btn {
-            flex: 1;
+        /* BOTÓN HAMBURGUESA (Las 3 líneas animadas) */
+        .menu-btn {
             background: transparent;
             border: none;
-            color: var(--text-muted);
-            padding: 12px;
-            border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 24px;
+            height: 18px;
+            z-index: 100; /* Siempre visible sobre el panel */
+        }
+
+        .menu-btn span {
+            width: 100%;
+            height: 3px;
+            background-color: var(--text);
+            border-radius: 2px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .mode-btn.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 4px 12px var(--accent-glow);
+        /* Animación cuando el menú está abierto */
+        .menu-btn.open span:nth-child(1) {
+            transform: translateY(7.5px) rotate(45deg);
+        }
+        .menu-btn.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .menu-btn.open span:nth-child(3) {
+            transform: translateY(-7.5px) rotate(-45deg);
         }
 
-        /* --- LA RUEDA INTERACTIVA --- */
-        .wheel-outer-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-            position: relative;
-        }
-
-        .wheel-container {
-            width: 180px;
-            height: 180px;
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .crypto-wheel {
-            width: 100%;
+        /* --- PANEL LATERAL DESLIZANTE --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Escondido por defecto a la izquierda */
+            width: 280px;
             height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, #1e293b 40%, #0f172a 100%);
-            border: 8px solid #22314d;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            touch-action: none; /* Crucial para que el celular no haga scroll al girar */
-            cursor: grab;
-            transition: transform 0.1s ease-out;
+            background: #0f172a;
+            border-right: 1px solid #22314d;
+            z-index: 90;
+            padding: 80px 20px 20px 20px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
         }
 
-        .crypto-wheel:active {
-            cursor: grabbing;
-            border-color: var(--accent);
-            box-shadow: 0 0 25px var(--accent-glow);
+        .sidebar.open {
+            left: 0; /* Se desliza hacia adentro */
         }
 
-        /* Detalle visual: Marcas o muescas en la rueda */
-        .wheel-notch {
-            position: absolute;
-            width: 4px;
-            height: 12px;
-            background: var(--text-muted);
-            top: 4px;
-            border-radius: 2px;
-        }
-
-        /* Indicador del valor en el centro de la rueda */
-        .wheel-center-value {
-            position: absolute;
-            width: 70px;
-            height: 70px;
-            background: #0b0f19;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid #22314d;
-            pointer-events: none; /* No interfiere con el toque */
-        }
-
-        .wheel-center-value .num {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--accent);
-        }
-
-        .wheel-center-value .lbl {
-            font-size: 0.6rem;
+        .sidebar h2 {
+            font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
-        }
-
-        /* Flecha indicadora fija arriba */
-        .pointer-arrow {
-            position: absolute;
-            top: -10px;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 14px solid var(--accent);
-            z-index: 10;
-        }
-
-        /* --- INPUTS --- */
-        .input-group {
+            letter-spacing: 1.5px;
             margin-bottom: 16px;
         }
 
-        label {
-            display: block;
-            font-size: 0.75rem;
+        .menu-list {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
         }
 
-        textarea {
+        .menu-item:hover, .menu-item.active {
+            background: #1e293b;
+            color: var(--accent);
+        }
+
+        .menu-item span {
+            margin-right: 12px;
+        }
+
+        /* Fondo oscuro translúcido que cubre la pantalla cuando el menú abre */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 85px;
-            background: #0b0f19;
-            border: 1.5px solid #22314d;
-            border-radius: 16px;
-            color: var(--text);
-            padding: 12px;
-            font-size: 0.95rem;
-            resize: none;
-            transition: all 0.3s;
-            user-select: text; /* Permite escribir */
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+            z-index: 80;
+            display: none;
         }
 
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+        .overlay.visible {
+            display: block;
         }
 
-        textarea[readonly] {
-            background: #111a2e;
-            color: #10b981;
-            border-color: rgba(16, 185, 129, 0.2);
+        /* --- CONTENEDOR DEL CONTENIDO INDEPENDIENTE --- */
+        .content-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: var(--bg-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header>
-            <h1>CriptoPana ⚡</h1>
-        </header>
-
-        <div class="mode-selector">
-            <button class="mode-btn active" id="btn-cifrar" onclick="setMode('cifrar')">Cifrar</button>
-            <button class="mode-btn" id="btn-descifrar" onclick="setMode('descifrar')">Descifrar</button>
+    <!-- Barra de navegación fija superior -->
+    <nav class="navbar">
+        <div class="menu-btn" id="menu-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
+        <div class="nav-title" id="nav-title">La Ruedita</div>
+        <div style="width: 24px;"></div> <!-- Contrapeso visual para centrar el título -->
+    </nav>
 
-        <!-- Componente de la Rueda Física -->
-        <div class="wheel-outer-wrapper">
-            <div class="pointer-arrow"></div>
-            <div class="wheel-container">
-                <div class="crypto-wheel" id="wheel">
-                    <!-- Muescas simuladas para dar efecto de rotación -->
-                    <div class="wheel-notch" style="transform: rotate(0deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(45deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(90deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(135deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(180deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(225deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(270deg)"></div>
-                    <div class="wheel-notch" style="transform: rotate(315deg)"></div>
-                </div>
-                <div class="wheel-center-value">
-                    <span class="num" id="shift-display">0</span>
-                    <span class="lbl">ROTACIÓN</span>
-                </div>
-            </div>
-        </div>
+    <!-- Fondo opaco para cliquear afuera del menú -->
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
-        <div class="input-group">
-            <label>Mensaje Original</label>
-            <textarea id="input-text" placeholder="Escribe tu mensaje aquí, pana..."></textarea>
-        </div>
-
-        <div class="input-group">
-            <label>Mensaje Seguro</label>
-            <textarea id="output-text" readonly placeholder="Gira la rueda para ver la magia..."></textarea>
-        </div>
+    <!-- Menú Deslizable Lateral -->
+    <div class="sidebar" id="sidebar">
+        <h2>Criptografías</h2>
+        <ul class="menu-list">
+            <li class="menu-item active" onclick="loadTool('ruedita.html', 'La Ruedita', this)">
+                <span>⭕</span> Cifrado César (Ruedita)
+            </li>
+            <li class="menu-item" onclick="loadTool('morse.html', 'Código Morse', this)">
+                <span>📟</span> Código Morse Animado
+            </li>
+            <li class="menu-item" onclick="loadTool('vigenere.html', 'Cifrado Vigenère', this)">
+                <span>🔑</span> Cifrado Vigenère
+            </li>
+        </ul>
     </div>
 
+    <!-- Aquí se cargará dinámicamente cada archivo de GitHub sin recargar la página entera -->
+    <iframe class="content-frame" id="app-loader" src="ruedita.html"></iframe>
+
     <script>
-        let currentMode = 'cifrar';
-        let currentShift = 0;
-        
-        const wheel = document.getElementById('wheel');
-        const shiftDisplay = document.getElementById('shift-display');
-        const inputText = document.getElementById('input-text');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const overlay = document.getElementById('overlay');
+        const appLoader = document.getElementById('app-loader');
+        const navTitle = document.getElementById('nav-title');
 
-        // Lógica de Rotación Táctil / Mouse
-        let isDragging = false;
-        let startAngle = 0;
-        let currentRotation = 0;
-
-        function getCenter(element) {
-            const rect = element.getBoundingClientRect();
-            return {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2
-            };
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            menuToggle.classList.toggle('open');
+            overlay.classList.toggle('visible');
         }
 
-        function getAngle(event, center) {
-            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-            return Math.atan2(clientY - center.y, clientX - center.x) * (180 / Math.PI);
-        }
-
-        function startDrag(e) {
-            isDragging = true;
-            const center = getCenter(wheel);
-            startAngle = getAngle(e, center) - currentRotation;
-        }
-
-        function doDrag(e) {
-            if (!isDragging) return;
-            e.preventDefault(); // Evita scroll molesto en celular
+        function loadTool(url, name, element) {
+            // Cambiar el archivo que se muestra
+            appLoader.src = url;
             
-            const center = getCenter(wheel);
-            const angle = getAngle(e, center);
-            currentRotation = angle - startAngle;
+            // Actualizar el título de la barra superior
+            navTitle.innerText = name;
             
-            // Renderizar rotación visual
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            // Cambiar la clase activa en el menú
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
             
-            // Convertir grados a un desplazamiento entre 0 y 25 (Alfabeto César)
-            // Normalizamos para que siempre sea positivo
-            let normalizedAngle = (currentRotation % 360 + 360) % 360;
-            // Invertimos la dirección para que tenga sentido con las agujas del reloj
-            let shift = Math.round((360 - normalizedAngle) / (360 / 26)) % 26;
-            
-            if (shift !== currentShift) {
-                currentShift = shift;
-                shiftDisplay.innerText = currentShift;
-                processText();
-            }
-        }
-
-        function stopDrag() {
-            isDragging = false;
-        }
-
-        // Eventos tanto para Mouse como para Pantallas Táctiles (Celulares)
-        wheel.addEventListener('mousedown', startDrag);
-        window.addEventListener('mousemove', doDrag);
-        window.addEventListener('mouseup', stopDrag);
-
-        wheel.addEventListener('touchstart', startDrag, { passive: false });
-        window.addEventListener('touchmove', doDrag, { passive: false });
-        window.addEventListener('touchend', stopDrag);
-
-        inputText.addEventListener('input', processText);
-
-        // Lógica de Cifrado
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('btn-cifrar').classList.toggle('active', mode === 'cifrar');
-            document.getElementById('btn-descifrar').classList.toggle('active', mode === 'descifrar');
-            processText();
-        }
-
-        function processText() {
-            const input = inputText.value;
-            let shift = currentShift;
-            
-            if (currentMode === 'descifrar') {
-                shift = (26 - shift) % 26;
-            }
-
-            let output = '';
-
-            for (let i = 0; i < input.length; i++) {
-                let char = input[i];
-                if (char.match(/[a-z]/i)) {
-                    const code = input.charCodeAt(i);
-                    if (code >= 65 && code <= 90) {
-                        char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
-                    } else if (code >= 97 && code <= 122) {
-                        char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
-                    }
-                }
-                output += char;
-            }
-
-            document.getElementById('output-text').value = output;
+            // Cerrar el menú automáticamente en móviles tras elegir
+            toggleMenu();
         }
     </script>
 </body>
