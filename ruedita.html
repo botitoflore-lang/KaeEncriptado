@@ -64,18 +64,23 @@
             box-shadow: 0 4px 12px var(--accent-glow);
         }
 
+        /* --- LA RUEDA INTERACTIVA CORREGIDA --- */
         .wheel-outer-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 24px;
+            margin: 10px 0 24px 0;
             position: relative;
+            width: 100%;
         }
 
         .wheel-container {
-            width: 170px;
-            height: 170px;
+            width: 180px;
+            height: 180px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .crypto-wheel {
@@ -85,12 +90,12 @@
             background: radial-gradient(circle, #1e293b 40%, #0f172a 100%);
             border: 8px solid #22314d;
             box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
             touch-action: none;
             cursor: grab;
+            z-index: 1;
         }
 
         .wheel-notch {
@@ -103,9 +108,8 @@
         }
 
         .wheel-center-value {
-            position: absolute;
-            width: 65px;
-            height: 65px;
+            width: 75px;
+            height: 75px;
             background: #0b0f19;
             border-radius: 50%;
             display: flex;
@@ -114,23 +118,28 @@
             justify-content: center;
             border: 3px solid #22314d;
             pointer-events: none;
+            z-index: 5;
         }
 
         .wheel-center-value .num {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--accent);
+            line-height: 1.2;
         }
 
         .wheel-center-value .lbl {
             font-size: 0.55rem;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .pointer-arrow {
             position: absolute;
-            top: -10px;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 0;
             height: 0;
             border-left: 10px solid transparent;
@@ -139,6 +148,7 @@
             z-index: 10;
         }
 
+        /* --- INPUTS --- */
         .input-group {
             margin-bottom: 16px;
         }
