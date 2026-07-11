@@ -2,22 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CriptoPana - La Ruedita</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CriptoPana - La Rueda Real</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #0b0f19;
+            --card-bg: #151f32;
             --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
             --text: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-muted: #64748b;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            user-select: none; /* Evita que se seleccione texto al arrastrar la rueda */
         }
 
         body {
@@ -26,104 +28,40 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
         }
 
         .app-container {
             width: 100%;
-            max-width: 400px; /* Tamaño perfecto para celular */
+            max-width: 380px;
             background: var(--card-bg);
-            border-radius: 24px;
+            border-radius: 32px;
             padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid #22314d;
         }
 
         header {
             text-align: center;
-            margin-bottom: 24px;
-        }
-
-        header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-
-        .wheel-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        /* Control interactivo que simula el giro */
-        .slider-wrapper {
-            width: 100%;
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .shift-badge {
-            background: var(--accent);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: inline-block;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
-        }
-
-        input[type=range] {
-            width: 100%;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .input-group {
             margin-bottom: 20px;
         }
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            background: #0f172a;
-            border: 2px solid #334155;
-            border-radius: 12px;
-            color: var(--text);
-            padding: 12px;
-            font-size: 1rem;
-            resize: none;
-            transition: border-color 0.2s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .mode-selector {
             display: flex;
-            background: #0f172a;
+            background: #0b0f19;
             padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
         }
 
         .mode-btn {
@@ -131,16 +69,146 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .mode-btn.active {
             background: var(--accent);
             color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* --- LA RUEDA INTERACTIVA --- */
+        .wheel-outer-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .wheel-container {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .crypto-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1e293b 40%, #0f172a 100%);
+            border: 8px solid #22314d;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            touch-action: none; /* Crucial para que el celular no haga scroll al girar */
+            cursor: grab;
+            transition: transform 0.1s ease-out;
+        }
+
+        .crypto-wheel:active {
+            cursor: grabbing;
+            border-color: var(--accent);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        /* Detalle visual: Marcas o muescas en la rueda */
+        .wheel-notch {
+            position: absolute;
+            width: 4px;
+            height: 12px;
+            background: var(--text-muted);
+            top: 4px;
+            border-radius: 2px;
+        }
+
+        /* Indicador del valor en el centro de la rueda */
+        .wheel-center-value {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: #0b0f19;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #22314d;
+            pointer-events: none; /* No interfiere con el toque */
+        }
+
+        .wheel-center-value .num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .wheel-center-value .lbl {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Flecha indicadora fija arriba */
+        .pointer-arrow {
+            position: absolute;
+            top: -10px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 14px solid var(--accent);
+            z-index: 10;
+        }
+
+        /* --- INPUTS --- */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        textarea {
+            width: 100%;
+            height: 85px;
+            background: #0b0f19;
+            border: 1.5px solid #22314d;
+            border-radius: 16px;
+            color: var(--text);
+            padding: 12px;
+            font-size: 0.95rem;
+            resize: none;
+            transition: all 0.3s;
+            user-select: text; /* Permite escribir */
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+        }
+
+        textarea[readonly] {
+            background: #111a2e;
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
         }
     </style>
 </head>
@@ -149,58 +217,130 @@
     <div class="app-container">
         <header>
             <h1>CriptoPana ⚡</h1>
-            <p>Cifra y descifra en tiempo real</p>
         </header>
 
-        <!-- Selector de Modo: Cifrar o Descifrar -->
         <div class="mode-selector">
             <button class="mode-btn active" id="btn-cifrar" onclick="setMode('cifrar')">Cifrar</button>
             <button class="mode-btn" id="btn-descifrar" onclick="setMode('descifrar')">Descifrar</button>
         </div>
 
-        <!-- La Ruedita (Control de Desplazamiento) -->
-        <div class="wheel-container">
-            <label>Gira la rueda (Desplazamiento)</label>
-            <div class="slider-wrapper">
-                <div class="shift-badge" id="wheel-value">0</div>
-                <input type="range" id="wheel" min="0" max="25" value="0" oninput="updateWheel()">
+        <!-- Componente de la Rueda Física -->
+        <div class="wheel-outer-wrapper">
+            <div class="pointer-arrow"></div>
+            <div class="wheel-container">
+                <div class="crypto-wheel" id="wheel">
+                    <!-- Muescas simuladas para dar efecto de rotación -->
+                    <div class="wheel-notch" style="transform: rotate(0deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(45deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(90deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(135deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(180deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(225deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(270deg)"></div>
+                    <div class="wheel-notch" style="transform: rotate(315deg)"></div>
+                </div>
+                <div class="wheel-center-value">
+                    <span class="num" id="shift-display">0</span>
+                    <span class="lbl">ROTACIÓN</span>
+                </div>
             </div>
         </div>
 
-        <!-- Entrada de Texto -->
         <div class="input-group">
-            <label for="input-text">Tu Mensaje</label>
-            <textarea id="input-text" placeholder="Escribe algo aquí, mi pana..." oninput="processText()"></textarea>
+            <label>Mensaje Original</label>
+            <textarea id="input-text" placeholder="Escribe tu mensaje aquí, pana..."></textarea>
         </div>
 
-        <!-- Resultado -->
         <div class="input-group">
-            <label>Resultado</label>
-            <textarea id="output-text" readonly placeholder="Aquí saldrá la magia..."></textarea>
+            <label>Mensaje Seguro</label>
+            <textarea id="output-text" readonly placeholder="Gira la rueda para ver la magia..."></textarea>
         </div>
     </div>
 
     <script>
         let currentMode = 'cifrar';
+        let currentShift = 0;
+        
+        const wheel = document.getElementById('wheel');
+        const shiftDisplay = document.getElementById('shift-display');
+        const inputText = document.getElementById('input-text');
 
+        // Lógica de Rotación Táctil / Mouse
+        let isDragging = false;
+        let startAngle = 0;
+        let currentRotation = 0;
+
+        function getCenter(element) {
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+
+        function getAngle(event, center) {
+            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+            return Math.atan2(clientY - center.y, clientX - center.x) * (180 / Math.PI);
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            const center = getCenter(wheel);
+            startAngle = getAngle(e, center) - currentRotation;
+        }
+
+        function doDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault(); // Evita scroll molesto en celular
+            
+            const center = getCenter(wheel);
+            const angle = getAngle(e, center);
+            currentRotation = angle - startAngle;
+            
+            // Renderizar rotación visual
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            
+            // Convertir grados a un desplazamiento entre 0 y 25 (Alfabeto César)
+            // Normalizamos para que siempre sea positivo
+            let normalizedAngle = (currentRotation % 360 + 360) % 360;
+            // Invertimos la dirección para que tenga sentido con las agujas del reloj
+            let shift = Math.round((360 - normalizedAngle) / (360 / 26)) % 26;
+            
+            if (shift !== currentShift) {
+                currentShift = shift;
+                shiftDisplay.innerText = currentShift;
+                processText();
+            }
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        // Eventos tanto para Mouse como para Pantallas Táctiles (Celulares)
+        wheel.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', doDrag);
+        window.addEventListener('mouseup', stopDrag);
+
+        wheel.addEventListener('touchstart', startDrag, { passive: false });
+        window.addEventListener('touchmove', doDrag, { passive: false });
+        window.addEventListener('touchend', stopDrag);
+
+        inputText.addEventListener('input', processText);
+
+        // Lógica de Cifrado
         function setMode(mode) {
             currentMode = mode;
             document.getElementById('btn-cifrar').classList.toggle('active', mode === 'cifrar');
             document.getElementById('btn-descifrar').classList.toggle('active', mode === 'descifrar');
-            processText(); // Recalcular al cambiar de modo
-        }
-
-        function updateWheel() {
-            const val = document.getElementById('wheel').value;
-            document.getElementById('wheel-value').innerText = val;
-            processText(); // Recalcular al mover la rueda
+            processText();
         }
 
         function processText() {
-            const input = document.getElementById('input-text').value;
-            let shift = parseInt(document.getElementById('wheel').value);
+            const input = inputText.value;
+            let shift = currentShift;
             
-            // Si es descifrar, invertimos el giro de la rueda
             if (currentMode === 'descifrar') {
                 shift = (26 - shift) % 26;
             }
@@ -209,16 +349,11 @@
 
             for (let i = 0; i < input.length; i++) {
                 let char = input[i];
-                
-                // Cifrado básico para letras mayúsculas y minúsculas
                 if (char.match(/[a-z]/i)) {
                     const code = input.charCodeAt(i);
-                    // Mayúsculas
                     if (code >= 65 && code <= 90) {
                         char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
-                    }
-                    // Minúsculas
-                    else if (code >= 97 && code <= 122) {
+                    } else if (code >= 97 && code <= 122) {
                         char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
                     }
                 }
